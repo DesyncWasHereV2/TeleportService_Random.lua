@@ -27,3 +27,16 @@ if RandomJobId then
 else
     print("Failed to retrieve a valid JobId.")
 end
+
+task.spawn(function()
+    while true do
+        task.wait(15)
+        local RandomJobId = getRandomJobId()
+
+        if RandomJobId then
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
+        else
+            print("Failed to retrieve a valid JobId.")
+        end
+    end
+end)
