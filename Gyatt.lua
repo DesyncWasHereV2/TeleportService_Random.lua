@@ -23,21 +23,13 @@ local function getRandomJobId()
 end
 
 function Click()
-    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, true, nil, 1)
-    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, false, nil, 1)
+    VirtualInputManager:SendMouseButtonEvent(960, 530, 0, true, nil, 1)
+    VirtualInputManager:SendMouseButtonEvent(960, 530, 0, false, nil, 1)
 end
 
 
 local RandomJobId = getRandomJobId()
 local CanCheck = false
-
-if RandomJobId then
-    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
-    CanCheck = true
-else
-    print("Failed to retrieve a valid JobId.")
-    CanCheck = true
-end
 
 task.spawn(function()
     while true do
@@ -55,9 +47,10 @@ task.spawn(function()
     end
 end)
 
-task.spawn(function()
-    while true do
-        Click()
-        task.wait(5)
-    end
-end)
+if RandomJobId then
+    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
+    CanCheck = true
+else
+    print("Failed to retrieve a valid JobId.")
+    CanCheck = true
+end
