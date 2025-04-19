@@ -10,7 +10,7 @@ local function getRandomJobId()
                 local randomServer = servers[math.random(1, #servers)]
                 local jobId = randomServer.id
                 print("Random JobId: " .. jobId)
-                break
+                return jobId
             end
         else
             print("Data invalid or error, retrying...")
@@ -21,4 +21,9 @@ local function getRandomJobId()
 end
 
 local RandomJobId = getRandomJobId()
-game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
+
+if RandomJobId then
+    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
+else
+    print("Failed to retrieve a valid JobId.")
+end
