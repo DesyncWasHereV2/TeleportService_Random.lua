@@ -23,9 +23,10 @@ local function getRandomJobId()
 end
 
 function Click()
-    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, true, game, 1)
-    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, false, game, 1)
+    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, true, nil, 1)
+    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, false, nil, 1)
 end
+
 
 local RandomJobId = getRandomJobId()
 local CanCheck = false
