@@ -1,5 +1,3 @@
-local VirtualInputManager = game:GetService("VirtualInputManager")
-
 local function getRandomJobId()
     while true do
         local success, data = pcall(function()
@@ -22,12 +20,6 @@ local function getRandomJobId()
     end
 end
 
-function Click()
-    VirtualInputManager:SendMouseButtonEvent(960, 530, 0, true, nil, 1)
-    VirtualInputManager:SendMouseButtonEvent(960, 530, 0, false, nil, 1)
-end
-
-
 local RandomJobId = getRandomJobId()
 local CanCheck = false
 
@@ -42,6 +34,8 @@ task.spawn(function()
             else
                 print("Failed to retrieve a valid JobId.")
             end
+
+            print("We still here.")
         end
         task.wait(0.1)
     end
