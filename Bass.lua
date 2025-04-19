@@ -34,7 +34,7 @@ end
 task.spawn(function()
     while true do
         if CanCheck == true then
-            task.wait(35)
+            task.wait(30)
             local RandomJobId = getRandomJobId()
     
             if RandomJobId then
