@@ -1,42 +1,73 @@
-local TeleportService = game:GetService("TeleportService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local function TeleportToAnyServer(placeId)
-    local success, servers = pcall(function()
-        return game:GetService("HttpService"):GetAsync("https://games.roblox.com/v1/games/" .. placeId .. "/servers?limit=10")
-    end)
-    
-    if not success then
-        warn("❌ Failed to fetch server list.")
-        return
-    end
-
-    local availableServers = {}
-    
-    local serverData = game:GetService("HttpService"):JSONDecode(servers)
-    for _, server in ipairs(serverData.data) do
-        if server.playing < server.maxPlayers then
-            table.insert(availableServers, server)
-        end
-    end
-    
-    if #availableServers == 0 then
-        warn("❌ No available servers to join.")
-        return
-    end
-
-    local serverToJoin = availableServers[math.random(1, #availableServers)]
-
-    local success, err = pcall(function()
-        TeleportService:TeleportToPlaceInstance(placeId, serverToJoin.id, LocalPlayer)
-    end)
-
-    if not success then
-        warn("❌ Failed to teleport:", err)
-    else
-        print("✅ Teleported to server ID:", serverToJoin.id)
-    end
-end
-
-TeleportToAnyServer(game.PlaceId)
+--Server Hop Script cr.Magma Hub Src
+          local PlaceID = game.PlaceId
+          local AllIDs = {}
+          local foundAnything = ""
+          local actualHour = os.date("!*t").hour
+          local Deleted = false
+          --[[
+          local File = pcall(function()
+              AllIDs = game:GetService('HttpService'):JSONDecode(readfile("NotSameServers.json"))
+          end)
+          if not File then
+              table.insert(AllIDs, actualHour)
+              writefile("NotSameServers.json", game:GetService('HttpService'):JSONEncode(AllIDs))
+          end
+          ]]
+          function TPReturner()
+              local Site;
+              if foundAnything == "" then
+                  Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100'))
+              else
+                  Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything))
+              end
+              local ID = ""
+              if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+                  foundAnything = Site.nextPageCursor
+              end
+              local num = 0;
+              for i,v in pairs(Site.data) do
+                  local Possible = true
+                  ID = tostring(v.id)
+                  if tonumber(v.maxPlayers) > tonumber(v.playing) then
+                      for _,Existing in pairs(AllIDs) do
+                          if num ~= 0 then
+                              if ID == tostring(Existing) then
+                                  Possible = false
+                              end
+                          else
+                              if tonumber(actualHour) ~= tonumber(Existing) then
+                                  local delFile = pcall(function()
+                                      -- delfile("NotSameServers.json")
+                                      AllIDs = {}
+                                      table.insert(AllIDs, actualHour)
+                                  end)
+                              end
+                          end
+                          num = num + 1
+                      end
+                      if Possible == true then
+                          table.insert(AllIDs, ID)
+                          wait()
+                          pcall(function()
+                              -- writefile("NotSameServers.json", game:GetService('HttpService'):JSONEncode(AllIDs))
+                              wait()
+                              game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
+                          end)
+                          wait(4)
+                      end
+                  end
+              end
+          end
+ 
+          function Teleport()
+              while wait() do
+                  pcall(function()
+                      TPReturner()
+                      if foundAnything ~= "" then
+                          TPReturner()
+                      end
+                  end)
+              end
+          end
+ 
+          Teleport()
