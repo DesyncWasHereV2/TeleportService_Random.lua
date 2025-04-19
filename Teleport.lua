@@ -1,51 +1,42 @@
-local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local PlaceId = game.PlaceId
-local Cursor = nil
+local function TeleportToAnyServer(placeId)
+    local success, servers = pcall(function()
+        return game:GetService("HttpService"):GetAsync("https://games.roblox.com/v1/games/" .. placeId .. "/servers?limit=10")
+    end)
+    
+    if not success then
+        warn("❌ Failed to fetch server list.")
+        return
+    end
 
-repeat task.wait() until game.JobId and #game.JobId > 5
+    local availableServers = {}
+    
+    local serverData = game:GetService("HttpService"):JSONDecode(servers)
+    for _, server in ipairs(serverData.data) do
+        if server.playing < server.maxPlayers then
+            table.insert(availableServers, server)
+        end
+    end
+    
+    if #availableServers == 0 then
+        warn("❌ No available servers to join.")
+        return
+    end
 
-local function GetServers(cursor)
-	local url = "https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Asc&limit=100"
-	if cursor then
-		url = url .. "&cursor=" .. cursor
-	end
+    local serverToJoin = availableServers[math.random(1, #availableServers)]
 
-	local success, result = pcall(function()
-		return HttpService:JSONDecode(game:HttpGet(url))
-	end)
+    local success, err = pcall(function()
+        TeleportService:TeleportToPlaceInstance(placeId, serverToJoin.id, LocalPlayer)
+    end)
 
-	if success and result and result.data then
-		return result
-	end
-
-	warn("❌ Failed to get server list.")
-	return nil
+    if not success then
+        warn("❌ Failed to teleport:", err)
+    else
+        print("✅ Teleported to server ID:", serverToJoin.id)
+    end
 end
 
-local function HopToAnyNonFullServer()
-	while true do
-		print("📄 Requesting server list...")
-		local servers = GetServers(Cursor)
-		if not servers then break end
-
-		for _, server in ipairs(servers.data) do
-			print("➡️ Server:", server.id, "Players:", server.playing, "/", server.maxPlayers)
-			if server.playing < server.maxPlayers and server.id ~= game.JobId then
-				print("✅ Found non-full server, hopping:", server.id)
-				TeleportService:TeleportToPlaceInstance(PlaceId, server.id, Players.LocalPlayer)
-				return
-			end
-		end
-
-		Cursor = servers.nextPageCursor
-		if not Cursor then break end
-		task.wait(0.5)
-	end
-
-	warn("⚠️ No non-full servers found.")
-end
-
-HopToAnyNonFullServer()
+TeleportToAnyServer(game.PlaceId)
