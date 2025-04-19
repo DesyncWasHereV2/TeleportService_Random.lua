@@ -1,3 +1,5 @@
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
 local function getRandomJobId()
     while true do
         local success, data = pcall(function()
@@ -18,6 +20,11 @@ local function getRandomJobId()
         
         task.wait(60)
     end
+end
+
+function Click()
+    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, true, game, 1)
+    VirtualInputManager:SendMouseButtonEvent(961, 529, 0, false, game, 1)
 end
 
 local RandomJobId = getRandomJobId()
@@ -44,5 +51,11 @@ task.spawn(function()
             end
         end
         task.wait(0.1)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        Click()
     end
 end)
