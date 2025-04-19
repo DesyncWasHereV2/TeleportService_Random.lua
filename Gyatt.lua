@@ -1,51 +1,62 @@
-local function getRandomJobId()
-    while true do
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+
+local function getServers(pages)
+    local allServers = {}
+    local cursor = nil
+    local baseUrl = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+
+    for i = 1, pages do
+        local url = baseUrl
+        if cursor then
+            url = url .. "&cursor=" .. cursor
+        end
+
         local success, data = pcall(function()
-            return game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
+            return HttpService:JSONDecode(game:HttpGet(url))
         end)
 
         if success and data and data.data then
-            local servers = data.data
-            if #servers > 0 then
-                local randomServer = servers[math.random(1, #servers)]
-                local jobId = randomServer.id
-                print("Random JobId: " .. jobId)
-                return jobId
+            for _, server in ipairs(data.data) do
+                table.insert(allServers, server)
             end
+            cursor = data.nextPageCursor
+            if not cursor then break end
         else
-            print("Data invalid or error, retrying...")
+            warn("Failed to get servers for page " .. i)
+            warn("Success:", success)
+            warn("Raw result:", data)
+            if type(data) == "table" then
+                for i, v in pairs(data) do
+                    print(i, v)
+                end
+            end
+            break
         end
-        
-        task.wait(60)
+    end
+
+    return allServers
+end
+
+local function getRandomJobId()
+    local start = tick()
+    while true do
+        local servers = getServers(3)
+        if #servers > 0 then
+            local chosenServer = servers[math.random(1, #servers)]
+            local jobId = chosenServer.id
+            print("Found server:", jobId)
+            print("Time taken: " .. (tick() - start) .. " seconds")
+            return jobId
+        else
+            warn("No servers found. Retrying in 60 seconds...")
+            task.wait(60)
+        end
     end
 end
 
-local CanCheck = false
-
-task.spawn(function()
-    while true do
-        if CanCheck == true then
-            task.wait(30)
-            local RandomJobId = getRandomJobId()
-    
-            if RandomJobId then
-                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
-            else
-                print("Failed to retrieve a valid JobId.")
-            end
-
-            print("We still here.")
-        end
-        task.wait(0.1)
-    end
-end)
-
-local RandomJobId = getRandomJobId()
-
-if RandomJobId then
-    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
-    CanCheck = true
-else
-    print("Failed to retrieve a valid JobId.")
-    CanCheck = true
+local jobId = getRandomJobId()
+if jobId then
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, Players.LocalPlayer)
 end
