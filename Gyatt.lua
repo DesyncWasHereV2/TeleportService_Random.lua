@@ -20,7 +20,6 @@ local function getRandomJobId()
     end
 end
 
-local RandomJobId = getRandomJobId()
 local CanCheck = false
 
 task.spawn(function()
@@ -40,6 +39,8 @@ task.spawn(function()
         task.wait(0.1)
     end
 end)
+
+local RandomJobId = getRandomJobId()
 
 if RandomJobId then
     game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, RandomJobId, game.Players.LocalPlayer)
