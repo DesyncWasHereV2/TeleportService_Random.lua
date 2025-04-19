@@ -30,7 +30,7 @@ end
 
 task.spawn(function()
     while true do
-        task.wait(15)
+        task.wait(120)
         local RandomJobId = getRandomJobId()
 
         if RandomJobId then
