@@ -58,5 +58,6 @@ end)
 task.spawn(function()
     while true do
         Click()
+        task.wait(5)
     end
 end)
