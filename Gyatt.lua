@@ -1,6 +1,7 @@
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 
 local function getServers(pages)
     local allServers = {}
@@ -25,8 +26,6 @@ local function getServers(pages)
             if not cursor then break end
         else
             warn("Failed to get servers for page " .. i)
-            warn("Success:", success)
-            warn("Raw result:", data)
             break
         end
     end
@@ -51,11 +50,30 @@ local function getRandomJobId()
     end
 end
 
-local jobId = getRandomJobId()
-if jobId then
-    local success, errorMessage = pcall(function()
-        return TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
-    end)
+local function teleportFailed()
+    local promptGui = CoreGui:FindFirstChild("RobloxPromptGui")
+    if promptGui and promptGui.Enabled then
+        local overlay = promptGui:FindFirstChild("promptOverlay")
+        if overlay and overlay.Visible then
+            local errorPrompt = overlay:FindFirstChild("ErrorPrompt")
+            if errorPrompt and errorPrompt.Visible then
+                return true
+            end
+        end
+    end
+    return false
+end
 
-    print(success, errorMessage)
+while true do
+    local jobId = getRandomJobId()
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, Players.LocalPlayer)
+
+    task.wait(7)
+
+    if teleportFailed() then
+        warn("Teleport failed. Retrying...")
+        task.wait(5)
+    else
+        break
+    end
 end
