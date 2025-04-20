@@ -27,11 +27,6 @@ local function getServers(pages)
             warn("Failed to get servers for page " .. i)
             warn("Success:", success)
             warn("Raw result:", data)
-            if type(data) == "table" then
-                for i, v in pairs(data) do
-                    print(i, v)
-                end
-            end
             break
         end
     end
@@ -58,5 +53,9 @@ end
 
 local jobId = getRandomJobId()
 if jobId then
-    TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, Players.LocalPlayer)
+    local success, errorMessage = pcall(function()
+        return TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
+    end)
+
+    print(success, errorMessage)
 end
